@@ -1,3 +1,8 @@
 # webapp
+NativeScript con Angular
 
-[Edit in StackBlitz next generation editor ⚡️](https://stackblitz.com/~/github.com/Israel8002/webapp)
+Login y registro de usuarios
+Formulario de evaluación de cuartos de comunicaciones de red
+Subida de fotos
+Inventario de equipos
+Generación de reportes en PDF
