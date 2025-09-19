@@ -3,6 +3,17 @@
   "main": "./src/main.ts",
   "version": "1.0.0",
   "private": true,
+  "scripts": {
+    "build:web": "ns build web --bundle --env.production",
+    "serve:web": "ns serve web",
+    "build:android": "ns build android --bundle --env.production",
+    "build:ios": "ns build ios --bundle --env.production",
+    "run:android": "ns run android",
+    "run:ios": "ns run ios",
+    "run:web": "ns run web",
+    "clean": "ns clean",
+    "test": "echo \"No tests specified\" && exit 0"
+  },
   "dependencies": {
     "@angular/animations": "~18.0.0",
     "@angular/common": "~18.0.0",
