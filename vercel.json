@@ -21,6 +21,7 @@
   },
   "buildCommand": "npm run build:web",
   "outputDirectory": "dist",
-  "installCommand": "npm install",
-  "devCommand": "npm run serve:web"
+  "installCommand": "npm install --legacy-peer-deps",
+  "devCommand": "npm run serve:web",
+  "framework": "other"
 }

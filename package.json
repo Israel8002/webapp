@@ -30,7 +30,7 @@
     "@nativescript/firebase-auth": "^3.2.1",
     "@nativescript/firebase-firestore": "^3.2.1",
     "@nativescript/firebase-storage": "^3.2.1",
-    "nativescript-pdf-generation": "^1.7.1",
+    "jspdf": "^2.5.1",
     "rxjs": "~7.8.0",
     "zone.js": "~0.14.2"
   },

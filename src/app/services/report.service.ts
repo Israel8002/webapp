@@ -1,8 +1,7 @@
 import { Injectable } from '@angular/core';
 import { firebase } from '@nativescript/firebase-core';
 import '@nativescript/firebase-firestore';
-import * as pdfGeneration from 'nativescript-pdf-generation';
-import { File, Folder, knownFolders, path } from '@nativescript/core';
+import jsPDF from 'jspdf';
 import { Report, ReportType, ReportData, ReportStatistics, ReportFilters } from '../models/report.model';
 import { Evaluation } from '../models/evaluation.model';
 import { Equipment } from '../models/equipment.model';
@@ -15,17 +14,78 @@ export class ReportService {
   async generateReport(type: ReportType, filters?: ReportFilters): Promise<string> {
     try {
       const reportData = await this.collectReportData(type, filters);
-      const htmlContent = this.generateHTMLContent(type, reportData);
       
       const fileName = `reporte_${type}_${this.formatDate(new Date())}.pdf`;
-      const pdfPath = path.join(knownFolders.documents().path, fileName);
       
-      await pdfGeneration.generatePdf(htmlContent, pdfPath);
+      // Crear PDF con jsPDF
+      const pdf = new jsPDF();
+      
+      // Configurar fuente y tamaño
+      pdf.setFontSize(20);
+      pdf.text('Reporte de Evaluación de Infraestructura de Red', 20, 30);
+      
+      pdf.setFontSize(12);
+      pdf.text(`Generado el: ${new Date().toLocaleDateString('es-ES')}`, 20, 50);
+      
+      // Añadir estadísticas
+      if (reportData.statistics) {
+        pdf.text('Resumen Ejecutivo:', 20, 70);
+        pdf.text(`Total Evaluaciones: ${reportData.statistics.totalEvaluations}`, 20, 85);
+        pdf.text(`Total Equipos: ${reportData.statistics.totalEquipment}`, 20, 100);
+        pdf.text(`Problemas Críticos: ${reportData.statistics.criticalIssues}`, 20, 115);
+        pdf.text(`Mantenimientos Pendientes: ${reportData.statistics.maintenanceDue}`, 20, 130);
+      }
+      
+      // Añadir evaluaciones
+      if (reportData.evaluations && reportData.evaluations.length > 0) {
+        pdf.addPage();
+        pdf.setFontSize(16);
+        pdf.text('Evaluaciones de Cuartos de Comunicaciones', 20, 30);
+        
+        let yPosition = 50;
+        reportData.evaluations.forEach((eval, index) => {
+          if (yPosition > 250) {
+            pdf.addPage();
+            yPosition = 30;
+          }
+          
+          pdf.setFontSize(10);
+          pdf.text(`${index + 1}. ${eval.roomName} - ${eval.location}`, 20, yPosition);
+          pdf.text(`   Prioridad: ${this.getPriorityLabel(eval.priority)}`, 20, yPosition + 10);
+          pdf.text(`   Estado: ${this.getStatusLabel(eval.status)}`, 20, yPosition + 20);
+          yPosition += 35;
+        });
+      }
+      
+      // Añadir equipos
+      if (reportData.equipment && reportData.equipment.length > 0) {
+        pdf.addPage();
+        pdf.setFontSize(16);
+        pdf.text('Inventario de Equipos', 20, 30);
+        
+        let yPosition = 50;
+        reportData.equipment.forEach((eq, index) => {
+          if (yPosition > 250) {
+            pdf.addPage();
+            yPosition = 30;
+          }
+          
+          pdf.setFontSize(10);
+          pdf.text(`${index + 1}. ${eq.name} - ${eq.brand} ${eq.model}`, 20, yPosition);
+          pdf.text(`   Categoría: ${this.getCategoryLabel(eq.category)}`, 20, yPosition + 10);
+          pdf.text(`   Estado: ${this.getStatusLabel(eq.status)}`, 20, yPosition + 20);
+          yPosition += 35;
+        });
+      }
+      
+      // Guardar PDF
+      const pdfBlob = pdf.output('blob');
+      const pdfUrl = URL.createObjectURL(pdfBlob);
       
       // Guardar metadatos del reporte
-      await this.saveReportMetadata(type, reportData, pdfPath, filters);
+      await this.saveReportMetadata(type, reportData, pdfUrl, filters);
       
-      return pdfPath;
+      return pdfUrl;
     } catch (error) {
       console.error('Error generating report:', error);
       throw error;
